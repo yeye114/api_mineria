@@ -169,6 +169,10 @@ async def create_reading(
         "timestamp": reading_dict["timestamp"]
     }
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
 @app.get("/datos", response_model=List[SensorReading])
 async def obtener_datos(
     api_key: str = Depends(get_api_key),
@@ -183,7 +187,3 @@ async def obtener_datos(
         "timestamp": reading["timestamp"]
     } for reading in readings]
 
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
