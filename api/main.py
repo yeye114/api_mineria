@@ -237,15 +237,15 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 @app.get("/datos", response_model=List[SensorReading])
-async def obtener_datos(
-    api_key: str = Depends(get_api_key),
-    db: MongoClient = Depends(get_db)
+async def datos_publicos(
+    db: MongoClient = Depends(get_db)  # <-- SIN API KEY
 ):
     collection = db[os.getenv("COLLECTION_NAME", "readings")]
-    readings = list(collection.find().limit(100))
+    readings = list(collection.find().limit(1000))
     return [{
         "id": str(reading["_id"]),
         "type": reading["type"],
         "value": reading["value"],
         "timestamp": reading["timestamp"]
     } for reading in readings]
+
