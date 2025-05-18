@@ -169,6 +169,21 @@ async def create_reading(
         "timestamp": reading_dict["timestamp"]
     }
 
+@app.get("/datos", response_model=List[SensorReading])
+async def obtener_datos(
+    api_key: str = Depends(get_api_key),
+    db: MongoClient = Depends(get_db)
+):
+    collection = db[os.getenv("COLLECTION_NAME", "readings")]
+    readings = list(collection.find().limit(100))
+    return [{
+        "id": str(reading["_id"]),
+        "type": reading["type"],
+        "value": reading["value"],
+        "timestamp": reading["timestamp"]
+    } for reading in readings]
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
