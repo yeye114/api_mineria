@@ -54,7 +54,7 @@ class SensorReading(BaseModel):
 def get_db():
     try:
         client = MongoClient(
-            os.getenv("MONGODB_URI", "mongodb://localhost:27017"),
+            os.getenv("MONGODB_URI", "mongodb+srv://cira3726:xdW0f8ccY7GjDHWP@cluster0.wnffexy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"),
             connectTimeoutMS=5000,
             socketTimeoutMS=5000,
             maxPoolSize=100
