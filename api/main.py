@@ -141,6 +141,69 @@ async def get_reading_by_id(
         "timestamp": reading["timestamp"]
     }
 
+# Endpoints como solicitaste
+@app.get("/readings/", response_model=List[SensorReading])
+async def get_all_readings(
+    api_key: str = Depends(get_api_key),
+    db: MongoClient = Depends(get_db)
+):
+    collection = db[os.getenv("COLLECTION_NAME", "readings")]
+    readings = list(collection.find().limit(1000))
+    return [{
+        "id": str(reading["_id"]),
+        "type": reading["type"],
+        "value": reading["value"],
+        "timestamp": reading["timestamp"]
+    } for reading in readings]
+
+@app.get("/readings/filter/", response_model=List[SensorReading])
+async def filter_readings(
+    field: str = Query(..., description="Campo por el que filtrar"),
+    value: str = Query(..., description="Valor del campo a buscar"),
+    api_key: str = Depends(get_api_key),
+    db: MongoClient = Depends(get_db)
+):
+    collection = db[os.getenv("COLLECTION_NAME", "readings")]
+    
+    # Convertir value a número si es posible
+    try:
+        value = float(value) if "." in value else int(value)
+    except ValueError:
+        pass
+    
+    query = {field: value}
+    readings = list(collection.find(query).limit(1000))
+    
+    return [{
+        "id": str(reading["_id"]),
+        "type": reading["type"],
+        "value": reading["value"],
+        "timestamp": reading["timestamp"]
+    } for reading in readings]
+
+@app.get("/readings/{reading_id}", response_model=SensorReading)
+async def get_reading_by_id(
+    reading_id: str,
+    api_key: str = Depends(get_api_key),
+    db: MongoClient = Depends(get_db)
+):
+    collection = db[os.getenv("COLLECTION_NAME", "readings")]
+    
+    try:
+        reading = collection.find_one({"_id": ObjectId(reading_id)})
+    except:
+        reading = None
+    
+    if not reading:
+        raise HTTPException(status_code=404, detail="Reading not found")
+    
+    return {
+        "id": str(reading["_id"]),
+        "type": reading["type"],
+        "value": reading["value"],
+        "timestamp": reading["timestamp"]
+    }
+
 @app.post("/readings/", response_model=SensorReading)
 async def create_reading(
     reading: SensorReading,
@@ -186,4 +249,3 @@ async def obtener_datos(
         "value": reading["value"],
         "timestamp": reading["timestamp"]
     } for reading in readings]
-
