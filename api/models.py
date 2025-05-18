@@ -1,21 +1,23 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from datetime import datetime
-from typing import Optional, Union
+from typing import Union
 
 class SensorReading(BaseModel):
     id: str
     type: str
-    value: Union[float, str]  # Acepta float o string
+    value: Union[float, str]
     timestamp: datetime
 
-    @validator('value', pre=True)
+    @field_validator('value', mode='before')
+    @classmethod
     def convert_value(cls, v):
         try:
             return float(v)
         except (ValueError, TypeError):
             return str(v) if v is not None else None
 
-    @validator('timestamp', pre=True)
+    @field_validator('timestamp', mode='before')
+    @classmethod
     def parse_mongo_date(cls, v):
         if isinstance(v, dict) and '$date' in v:
             return datetime.fromisoformat(v['$date'].replace('Z', '+00:00'))
@@ -30,3 +32,4 @@ class SensorReading(BaseModel):
                 "timestamp": "2025-04-01T17:14:10.897Z"
             }
         }
+
