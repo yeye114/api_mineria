@@ -10,11 +10,16 @@ class SensorReading(BaseModel):
 
     @validator('value', pre=True)
     def convert_value(cls, v):
-        # Intenta convertir a float, si falla devuelve el valor original
         try:
             return float(v)
         except (ValueError, TypeError):
             return str(v) if v is not None else None
+
+    @validator('timestamp', pre=True)
+    def parse_mongo_date(cls, v):
+        if isinstance(v, dict) and '$date' in v:
+            return datetime.fromisoformat(v['$date'].replace('Z', '+00:00'))
+        return v
 
     class Config:
         json_schema_extra = {
